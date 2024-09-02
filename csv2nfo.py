@@ -71,19 +71,20 @@ if __name__ == "__main__":
 
     search_term = sys.argv[1]
     
-    # Define the CSV files to search
+    # Define the CSV files to search in the 'csv' directory
+    csv_dir = "csv"
     csv_files = {
-        "movies.csv": generate_movie_nfo,
-        "tvshows.csv": generate_tvshow_nfo,
-        "music.csv": generate_music_nfo
+        os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
+        os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo,
+        os.path.join(csv_dir, "music.csv"): generate_music_nfo
     }
 
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
-        full_path = os.path.join("csv", csv_file)
-        entries = find_entries(full_path, search_term)
+        entries = find_entries(csv_file, search_term)
         if entries:
             for entry in entries:
                 nfo_function(entry)
         else:
             print(f"No entries found in {csv_file} for: {search_term}")
+
