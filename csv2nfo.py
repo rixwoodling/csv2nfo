@@ -18,7 +18,6 @@ def generate_movie_nfo(entry_data, output_dir="."):
     output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
-    print(f"Movie NFO file created: {output_path}")
 
 def generate_tvshow_nfo(entry_data, output_dir="."):
     tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
@@ -33,7 +32,6 @@ def generate_tvshow_nfo(entry_data, output_dir="."):
     output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
-    print(f"TV Show NFO file created: {output_path}")
 
 def generate_music_nfo(entry_data, output_dir="."):
     music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
@@ -48,7 +46,6 @@ def generate_music_nfo(entry_data, output_dir="."):
     output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
-    print(f"Music NFO file created: {output_path}")
 
 def find_entries(csv_file, search_term):
     matches = []
@@ -60,8 +57,6 @@ def find_entries(csv_file, search_term):
                     if search_term.lower() in field.lower():
                         matches.append(row)
                         break  # Break to avoid adding the same row multiple times if the term appears in multiple fields
-    else:
-        print(f"File not found: {csv_file}")
     return matches
 
 if __name__ == "__main__":
@@ -85,7 +80,5 @@ if __name__ == "__main__":
         if entries:
             for entry in entries:
                 nfo_function(entry)
-        else:
-            print(f"No entries found in {csv_file} for: {search_term}")
 
 #
