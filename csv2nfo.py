@@ -6,12 +6,27 @@ import sys
 import os
 
 def generate_movie_nfo(entry_data, output_dir="."):
-    movie_tags_to_include = ['title', 'year', 'dateadded']
+    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
     nfo_content = "<movie>\n"
     
     for tag in movie_tags_to_include:
-        if tag in entry_data:
-            nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
+        if tag.startswith('actor'):
+            actor_number = tag[-1]  # Get the actor number from 'actor1', 'actor2', etc.
+            actor_name_key = f'actor_{actor_number}_name'
+            actor_role_key = f'actor_{actor_number}_role'
+            actor_order_key = f'actor_{actor_number}_order'
+            actor_thumb_key = f'actor_{actor_number}_thumb'
+            
+            if all(k in entry_data for k in [actor_name_key, actor_role_key, actor_order_key, actor_thumb_key]):
+                nfo_content += "<actor>\n"
+                nfo_content += f"<name>{entry_data[actor_name_key]}</name>\n"
+                nfo_content += f"<role>{entry_data[actor_role_key]}</role>\n"
+                nfo_content += f"<order>{entry_data[actor_order_key]}</order>\n"
+                nfo_content += f"<thumb>{entry_data[actor_thumb_key]}</thumb>\n"
+                nfo_content += "</actor>\n"
+        else:
+            if tag in entry_data:
+                nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
 
     nfo_content += "</movie>"
     
@@ -80,5 +95,5 @@ if __name__ == "__main__":
         if entries:
             for entry in entries:
                 nfo_function(entry)
-
+                
 #
