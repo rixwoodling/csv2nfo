@@ -78,6 +78,21 @@ def process_csv(csv_file, search_term, nfo_function, max_matches=None):
     for entry in entries:
         nfo_function(entry)
 
+def process_all_csvs(search_term):
+    csv_dir = "csv"
+    
+    # Process movies
+    csv_file = os.path.join(csv_dir, "movies.csv")
+    process_csv(csv_file, search_term, generate_movie_nfo)
+    
+    # Process TV episodes
+    csv_file = os.path.join(csv_dir, "tvshows.csv")
+    process_csv(csv_file, search_term, generate_episode_nfo)
+    
+    # Process songs
+    csv_file = os.path.join(csv_dir, "music.csv")
+    process_csv(csv_file, search_term, generate_song_nfo)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate NFO files based on CSV data")
     parser.add_argument("search_term", help="The term to search for in the CSV files")
@@ -99,7 +114,15 @@ if __name__ == "__main__":
     
     elif args.tvshow:
         csv_file = os.path.join(csv_dir, "tvshows.csv")
-        process_csv(csv_file, search_term, generate_tvshow_nfo, max_matches=1)  # Only create TV show NFO if one match
+        entries = find_entries(csv_file, search_term)
+        if len(entries) == 0:
+            print(f"Error: No TV show found for '{search_term}'.")
+        elif len(entries) > 1:
+            print(f"Error: Found {len(entries)} TV shows for '{search_term}'. Please refine your search to return only one result.")
+            for entry in entries:
+                print(f"- {entry['title']} ({entry['year']})")
+        else:
+            generate_tvshow_nfo(entries[0])  # Generate NFO if exactly one match is found
     
     elif args.episode:
         csv_file = os.path.join(csv_dir, "tvshows.csv")
@@ -107,21 +130,22 @@ if __name__ == "__main__":
     
     elif args.artist:
         csv_file = os.path.join(csv_dir, "music.csv")
-        process_csv(csv_file, search_term, generate_music_artist_nfo, max_matches=1)  # Only one artist match
+        entries = find_entries(csv_file, search_term)
+        if len(entries) == 0:
+            print(f"Error: No music artist found for '{search_term}'.")
+        elif len(entries) > 1:
+            print(f"Error: Found {len(entries)} music artists for '{search_term}'. Please refine your search to return only one result.")
+            for entry in entries:
+                print(f"- {entry['title']} ({entry['year']})")
+        else:
+            generate_music_artist_nfo(entries[0])  # Generate NFO if exactly one match is found
     
     elif args.song:
         csv_file = os.path.join(csv_dir, "music.csv")
         process_csv(csv_file, search_term, generate_song_nfo)
     
     else:
-        # Default case: Search for movies, episodes, and songs
-        csv_file = os.path.join(csv_dir, "movies.csv")
-        process_csv(csv_file, search_term, generate_movie_nfo)
-        
-        csv_file = os.path.join(csv_dir, "tvshows.csv")
-        process_csv(csv_file, search_term, generate_episode_nfo)
-        
-        csv_file = os.path.join(csv_dir, "music.csv")
-        process_csv(csv_file, search_term, generate_song_nfo)
+        # Default case: Search for all matching results in movies, episodes, and songs
+        process_all_csvs(search_term)
 
 #
