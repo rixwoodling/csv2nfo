@@ -160,9 +160,9 @@ if __name__ == "__main__":
     csv_dir = "csv"
 
     # Apply filtering logic based on flags
-    if args.movie:
+    if args.movies:
         csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
-    elif args.tvshow:
+    elif args.tvshows:
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
     else:
         # Default behavior when no flags are provided: search all CSV files
