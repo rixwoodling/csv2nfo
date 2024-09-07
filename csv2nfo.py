@@ -79,7 +79,7 @@ def generate_episode_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-    print(f"NFO file created: {output_path}")
+    #print(f"NFO file created: {output_path}")
 
 def generate_music_nfo(entry_data, output_dir="."):
     music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
