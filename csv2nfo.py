@@ -14,7 +14,7 @@ def ensure_nfo_directory_exists():
     return output_dir
 
 def generate_movie_nfo(entry_data, output_dir):
-    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
+    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']
     nfo_content = "<movie>\n"
     
     for tag in movie_tags_to_include:
@@ -39,6 +39,7 @@ def generate_movie_nfo(entry_data, output_dir):
     nfo_content += "</movie>"
     
     output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    print(f"Writing movie NFO to: {output_path}")  # Debugging info
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
@@ -53,6 +54,7 @@ def generate_tvshow_nfo(entry_data, output_dir):
     nfo_content += "</tvshow>"
     
     output_path = os.path.join(output_dir, "tvshow.nfo")
+    print(f"Writing TV show NFO to: {output_path}")  # Debugging info
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
@@ -70,26 +72,24 @@ def generate_song_nfo(entry_data, output_dir):
 
 def find_entries(csv_file, search_term):
     matches = []
+    print(f"Searching in {csv_file} for term: {search_term}")  # Debugging info
     with open(csv_file, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         for row in reader:
             if search_term.lower() in row['title'].lower():
                 matches.append(row)
+    print(f"Found {len(matches)} matches in {csv_file}")  # Debugging info
     return matches
 
-def process_csv(csv_file, search_term, nfo_function, max_matches=None):
+def process_csv(csv_file, search_term, nfo_function):
     entries = find_entries(csv_file, search_term)
-    if max_matches and len(entries) > max_matches:
-        print(f"Error: Found {len(entries)} matches. Please refine your search.")
-        return
     output_dir = ensure_nfo_directory_exists()  # Ensure 'nfo' directory exists
     for entry in entries:
         nfo_function(entry, output_dir)
 
 def process_all_csvs(search_term):
     csv_dir = "csv"
-    output_dir = ensure_nfo_directory_exists()
-
+    
     # Process movies
     csv_file = os.path.join(csv_dir, "movies.csv")
     process_csv(csv_file, search_term, generate_movie_nfo)
@@ -114,15 +114,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     search_term = args.search_term
 
-    csv_dir = "csv"
-    
     # Logic to handle flags
     if args.movie:
-        csv_file = os.path.join(csv_dir, "movies.csv")
+        csv_file = os.path.join("csv", "movies.csv")
         process_csv(csv_file, search_term, generate_movie_nfo)
     
     elif args.tvshow:
-        csv_file = os.path.join(csv_dir, "tvshows.csv")
+        csv_file = os.path.join("csv", "tvshows.csv")
         entries = find_entries(csv_file, search_term)
         if len(entries) == 0:
             print(f"Error: No TV show found for '{search_term}'.")
@@ -134,11 +132,11 @@ if __name__ == "__main__":
             generate_tvshow_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
     
     elif args.episode:
-        csv_file = os.path.join(csv_dir, "tvshows.csv")
+        csv_file = os.path.join("csv", "tvshows.csv")
         process_csv(csv_file, search_term, generate_episode_nfo)
     
     elif args.artist:
-        csv_file = os.path.join(csv_dir, "music.csv")
+        csv_file = os.path.join("csv", "music.csv")
         entries = find_entries(csv_file, search_term)
         if len(entries) == 0:
             print(f"Error: No music artist found for '{search_term}'.")
@@ -150,7 +148,7 @@ if __name__ == "__main__":
             generate_music_artist_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
     
     elif args.song:
-        csv_file = os.path.join(csv_dir, "music.csv")
+        csv_file = os.path.join("csv", "music.csv")
         process_csv(csv_file, search_term, generate_song_nfo)
     
     else:
