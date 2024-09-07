@@ -56,11 +56,11 @@ def generate_tvshow_nfo(entry_data, output_dir="."):
         nfo_file.write(nfo_content.strip())
 
 def generate_episode_nfo(entry_data, output_dir="."):
-    show_title = entry_data['show_title'].replace(" ", "_")  # Replace spaces with underscores for the filename
+    show_title = entry_data['show_title'].replace(" ", ".")  # Replace spaces with periods for the filename
     year = entry_data['year']
     season = entry_data['season']
     episode = entry_data['episode']
-    episode_title = entry_data['title'].replace(" ", "_")  # Replace spaces with underscores in the episode title
+    episode_title = entry_data['title'].replace(" ", ".")  # Replace spaces with periods in the episode title
 
     # Create the formatted filename: ShowTitle.Year.SXXEXX.EpisodeTitle.nfo
     filename = f"{show_title}.{year}.S{season.zfill(2)}E{episode.zfill(2)}.{episode_title}.nfo"
