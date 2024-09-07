@@ -4,6 +4,7 @@
 import csv
 import sys
 import os
+import argparse
 
 # Function to ensure 'nfo' directory exists
 def ensure_nfo_directory_exists():
@@ -145,29 +146,38 @@ def find_entries(csv_file, search_term):
     return matches
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python csv2nfo.py <search_term>")
-        sys.exit(1)
+    # Set up basic argparse
+    parser = argparse.ArgumentParser(description="Generate NFO files from CSV.")
+    parser.add_argument('-m', '--movie', action='store_true', help='Search only in movies.csv')
+    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only in tvshows.csv')
+    parser.add_argument('search_term', help='The search term for filtering entries')
+    args = parser.parse_args()
 
-    search_term = sys.argv[1]
-    
     # Ensure 'nfo' directory exists
     output_dir = ensure_nfo_directory_exists()
-    
+
     # Define the CSV files to search in the 'csv' directory
     csv_dir = "csv"
-    csv_files = {
-        os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
-        os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo,
-        os.path.join(csv_dir, "music.csv"): generate_music_nfo
-    }
+
+    # Apply filtering logic based on flags
+    if args.movie:
+        csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
+    elif args.tvshow:
+        csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
+    else:
+        # Default behavior when no flags are provided: search all CSV files
+        csv_files = {
+            os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
+            os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo,
+            os.path.join(csv_dir, "music.csv"): generate_music_nfo
+        }
 
     # Counter for NFO files created
     nfo_count = 0
 
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
-        entries = find_entries(csv_file, search_term)
+        entries = find_entries(csv_file, args.search_term)
         if entries:
             for entry in entries:
                 nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
