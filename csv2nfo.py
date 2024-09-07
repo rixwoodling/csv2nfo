@@ -12,8 +12,19 @@ def ensure_nfo_directory_exists():
         os.makedirs(output_dir)
     return output_dir
 
+# Function to sanitize filenames by replacing spaces with periods and keeping only alphanumeric characters and periods
+def sanitize_filename(title):
+    # Replace spaces with periods
+    title = title.replace(" ", ".")
+    
+    # Keep only alphanumeric characters and periods
+    sanitized_title = "".join(char for char in title if char.isalnum() or char == ".")
+    
+    return sanitized_title
+
 def generate_movie_nfo(entry_data, output_dir="."):
-    movie_title = entry_data['title'].replace(" ", ".")  # Replace spaces with periods for the filename
+    # Sanitize the movie title
+    movie_title = sanitize_filename(entry_data['title'])
     year = entry_data['year']
     
     # Create the formatted filename: MovieTitle.Year.nfo
@@ -64,16 +75,19 @@ def generate_tvshow_nfo(entry_data, output_dir="."):
 
     nfo_content += "</tvshow>"
     
-    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    # Sanitize the filename
+    filename = f"{sanitize_filename(entry_data['title'])}.nfo"
+    
+    output_path = os.path.join(output_dir, filename)
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
 def generate_episode_nfo(entry_data, output_dir="."):
-    show_title = entry_data['show_title'].replace(" ", ".")  # Replace spaces with periods for the filename
+    show_title = sanitize_filename(entry_data['show_title'])
     year = entry_data['year']
     season = entry_data['season']
     episode = entry_data['episode']
-    episode_title = entry_data['title'].replace(" ", ".")  # Replace spaces with periods in the episode title
+    episode_title = sanitize_filename(entry_data['title'])
 
     # Create the formatted filename: ShowTitle.Year.SXXEXX.EpisodeTitle.nfo
     filename = f"{show_title}.{year}.S{season.zfill(2)}E{episode.zfill(2)}.{episode_title}.nfo"
@@ -92,11 +106,15 @@ def generate_episode_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-    #print(f"NFO file created: {output_path}")
-
 def generate_music_nfo(entry_data, output_dir="."):
-    music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
+    music_title = sanitize_filename(entry_data['title'])
+    
+    # Create the formatted filename: MusicTitle.Year.nfo
+    filename = f"{music_title}.{entry_data['year']}.nfo"
+    
     nfo_content = "<music>\n"
+    
+    music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
     
     for tag in music_tags_to_include:
         if tag in entry_data:
@@ -104,7 +122,9 @@ def generate_music_nfo(entry_data, output_dir="."):
 
     nfo_content += "</music>"
     
-    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    # Path to save the NFO file
+    output_path = os.path.join(output_dir, filename)
+    
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
@@ -154,5 +174,3 @@ if __name__ == "__main__":
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
-
-#
