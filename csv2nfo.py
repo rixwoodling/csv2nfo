@@ -13,12 +13,22 @@ def ensure_nfo_directory_exists():
     return output_dir
 
 def generate_movie_nfo(entry_data, output_dir="."):
-    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
+    movie_title = entry_data['title'].replace(" ", ".")  # Replace spaces with periods for the filename
+    year = entry_data['year']
+    
+    # Create the formatted filename: MovieTitle.Year.nfo
+    filename = f"{movie_title}.{year}.nfo"
+    
+    # Path to save the NFO file
+    output_path = os.path.join(output_dir, filename)
+    
     nfo_content = "<movie>\n"
+    
+    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']
     
     for tag in movie_tags_to_include:
         if tag.startswith('actor'):
-            actor_number = tag[-1]  # Get the actor number from 'actor1', 'actor2', etc.
+            actor_number = tag[-1]
             actor_name_key = f'actor_{actor_number}_name'
             actor_role_key = f'actor_{actor_number}_role'
             actor_order_key = f'actor_{actor_number}_order'
@@ -37,9 +47,12 @@ def generate_movie_nfo(entry_data, output_dir="."):
 
     nfo_content += "</movie>"
     
-    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    # Write the NFO content to the file
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
+    
+    # Commented out the output
+    # print(f"NFO file created: {output_path}")
 
 def generate_tvshow_nfo(entry_data, output_dir="."):
     tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
