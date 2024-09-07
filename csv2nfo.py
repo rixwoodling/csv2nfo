@@ -41,19 +41,31 @@ def generate_movie_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-def generate_tvshow_nfo(entry_data, output_dir="."):
-    tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
-    nfo_content = "<tvshow>\n"
-    
-    for tag in tvshow_tags_to_include:
-        if tag in entry_data:
-            nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
+def generate_episode_nfo(entry_data, output_dir="."):
+    show_title = entry_data['show_title'].replace(" ", "_")  # Replace spaces with underscores for the filename
+    year = entry_data['year']
+    season = entry_data['season']
+    episode = entry_data['episode']
+    episode_title = entry_data['title'].replace(" ", "_")  # Replace spaces with underscores in the episode title
 
-    nfo_content += "</tvshow>"
+    # Create the formatted filename: ShowTitle.Year.SXXEXX.EpisodeTitle.nfo
+    filename = f"{show_title}.{year}.S{season.zfill(2)}E{episode.zfill(2)}.{episode_title}.nfo"
     
-    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    # Path to save the NFO file
+    output_path = os.path.join(output_dir, filename)
+    
+    nfo_content = "<episodedetails>\n"
+    nfo_content += f"<title>{entry_data['title']}</title>\n"
+    nfo_content += f"<season>{entry_data['season']}</season>\n"
+    nfo_content += f"<episode>{entry_data['episode']}</episode>\n"
+    nfo_content += f"<aired>{entry_data['release_date']}</aired>\n"
+    nfo_content += "</episodedetails>"
+    
+    # Write the NFO content to the file
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
+
+    print(f"NFO file created: {output_path}")
 
 def generate_music_nfo(entry_data, output_dir="."):
     music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
