@@ -20,6 +20,10 @@ def sanitize_filename(title):
     # Keep only alphanumeric characters and periods
     sanitized_title = "".join(char for char in title if char.isalnum() or char == ".")
     
+    # Replace multiple periods with a single period
+    while ".." in sanitized_title:
+        sanitized_title = sanitized_title.replace("..", ".")
+    
     return sanitized_title
 
 def generate_movie_nfo(entry_data, output_dir="."):
