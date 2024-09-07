@@ -4,17 +4,9 @@
 import csv
 import sys
 import os
-import argparse
 
-# Ensure the nfo directory exists
-def ensure_nfo_directory_exists():
-    output_dir = "nfo"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    return output_dir
-
-def generate_movie_nfo(entry_data, output_dir):
-    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']
+def generate_movie_nfo(entry_data, output_dir="."):
+    movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
     nfo_content = "<movie>\n"
     
     for tag in movie_tags_to_include:
@@ -39,11 +31,10 @@ def generate_movie_nfo(entry_data, output_dir):
     nfo_content += "</movie>"
     
     output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
-    print(f"Writing movie NFO to: {output_path}")  # Debugging info
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-def generate_tvshow_nfo(entry_data, output_dir):
+def generate_tvshow_nfo(entry_data, output_dir="."):
     tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
     nfo_content = "<tvshow>\n"
     
@@ -53,106 +44,54 @@ def generate_tvshow_nfo(entry_data, output_dir):
 
     nfo_content += "</tvshow>"
     
-    output_path = os.path.join(output_dir, "tvshow.nfo")
-    print(f"Writing TV show NFO to: {output_path}")  # Debugging info
+    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-def generate_episode_nfo(entry_data, output_dir):
-    # Function to generate episode NFO
-    pass
+def generate_music_nfo(entry_data, output_dir="."):
+    music_tags_to_include = ['title', 'year', 'dateadded', 'album', 'artist']
+    nfo_content = "<music>\n"
+    
+    for tag in music_tags_to_include:
+        if tag in entry_data:
+            nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
 
-def generate_music_artist_nfo(entry_data, output_dir):
-    # Function to generate music artist NFO
-    pass
-
-def generate_song_nfo(entry_data, output_dir):
-    # Function to generate song NFO
-    pass
+    nfo_content += "</music>"
+    
+    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    with open(output_path, 'w', encoding='utf-8') as nfo_file:
+        nfo_file.write(nfo_content.strip())
 
 def find_entries(csv_file, search_term):
     matches = []
-    print(f"Searching in {csv_file} for term: {search_term}")  # Debugging info
-    with open(csv_file, mode='r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            if search_term.lower() in row['title'].lower():
-                matches.append(row)
-    print(f"Found {len(matches)} matches in {csv_file}")  # Debugging info
+    if os.path.exists(csv_file):
+        with open(csv_file, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                for field in row.values():
+                    if search_term.lower() in field.lower():
+                        matches.append(row)
+                        break  # Break to avoid adding the same row multiple times if the term appears in multiple fields
     return matches
 
-def process_csv(csv_file, search_term, nfo_function):
-    entries = find_entries(csv_file, search_term)
-    output_dir = ensure_nfo_directory_exists()  # Ensure 'nfo' directory exists
-    for entry in entries:
-        nfo_function(entry, output_dir)
-
-def process_all_csvs(search_term):
-    csv_dir = "csv"
-    
-    # Process movies
-    csv_file = os.path.join(csv_dir, "movies.csv")
-    process_csv(csv_file, search_term, generate_movie_nfo)
-    
-    # Process TV episodes
-    csv_file = os.path.join(csv_dir, "tvshows.csv")
-    process_csv(csv_file, search_term, generate_episode_nfo)
-    
-    # Process songs
-    csv_file = os.path.join(csv_dir, "music.csv")
-    process_csv(csv_file, search_term, generate_song_nfo)
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate NFO files based on CSV data")
-    parser.add_argument("search_term", help="The term to search for in the CSV files")
-    parser.add_argument("-m", "--movie", action="store_true", help="Generate movie NFOs")
-    parser.add_argument("-t", "--tvshow", action="store_true", help="Generate TV show NFO")
-    parser.add_argument("-e", "--episode", action="store_true", help="Generate episode NFOs")
-    parser.add_argument("-a", "--artist", action="store_true", help="Generate music artist NFOs")
-    parser.add_argument("-s", "--song", action="store_true", help="Generate song NFOs")
-    
-    args = parser.parse_args()
-    search_term = args.search_term
+    if len(sys.argv) != 2:
+        print("Usage: python csv2nfo.py <search_term>")
+        sys.exit(1)
 
-    # Logic to handle flags
-    if args.movie:
-        csv_file = os.path.join("csv", "movies.csv")
-        process_csv(csv_file, search_term, generate_movie_nfo)
+    search_term = sys.argv[1]
     
-    elif args.tvshow:
-        csv_file = os.path.join("csv", "tvshows.csv")
-        entries = find_entries(csv_file, search_term)
-        if len(entries) == 0:
-            print(f"Error: No TV show found for '{search_term}'.")
-        elif len(entries) > 1:
-            print(f"Error: Found {len(entries)} TV shows for '{search_term}'. Please refine your search to return only one result.")
-            for entry in entries:
-                print(f"- {entry['title']} ({entry['year']})")
-        else:
-            generate_tvshow_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
-    
-    elif args.episode:
-        csv_file = os.path.join("csv", "tvshows.csv")
-        process_csv(csv_file, search_term, generate_episode_nfo)
-    
-    elif args.artist:
-        csv_file = os.path.join("csv", "music.csv")
-        entries = find_entries(csv_file, search_term)
-        if len(entries) == 0:
-            print(f"Error: No music artist found for '{search_term}'.")
-        elif len(entries) > 1:
-            print(f"Error: Found {len(entries)} music artists for '{search_term}'. Please refine your search to return only one result.")
-            for entry in entries:
-                print(f"- {entry['title']} ({entry['year']})")
-        else:
-            generate_music_artist_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
-    
-    elif args.song:
-        csv_file = os.path.join("csv", "music.csv")
-        process_csv(csv_file, search_term, generate_song_nfo)
-    
-    else:
-        # Default case: Search for all matching results in movies, episodes, and songs
-        process_all_csvs(search_term)
+    # Define the CSV files to search in the 'csv' directory
+    csv_dir = "csv"
+    csv_files = {
+        os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
+        os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo,
+        os.path.join(csv_dir, "music.csv"): generate_music_nfo
+    }
 
-#
+    # Iterate through each CSV file and apply the corresponding function
+    for csv_file, nfo_function in csv_files.items():
+        entries = find_entries(csv_file, search_term)
+        if entries:
+            for entry in entries:
+                nfo_function(entry)
