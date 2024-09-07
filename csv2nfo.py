@@ -41,6 +41,20 @@ def generate_movie_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
+def generate_tvshow_nfo(entry_data, output_dir="."):
+    tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
+    nfo_content = "<tvshow>\n"
+    
+    for tag in tvshow_tags_to_include:
+        if tag in entry_data:
+            nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
+
+    nfo_content += "</tvshow>"
+    
+    output_path = os.path.join(output_dir, f"{entry_data['title']}.nfo")
+    with open(output_path, 'w', encoding='utf-8') as nfo_file:
+        nfo_file.write(nfo_content.strip())
+
 def generate_episode_nfo(entry_data, output_dir="."):
     show_title = entry_data['show_title'].replace(" ", "_")  # Replace spaces with underscores for the filename
     year = entry_data['year']
