@@ -6,7 +6,14 @@ import sys
 import os
 import argparse
 
-def generate_movie_nfo(entry_data, output_dir="."):
+# Ensure the nfo directory exists
+def ensure_nfo_directory_exists():
+    output_dir = "nfo"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    return output_dir
+
+def generate_movie_nfo(entry_data, output_dir):
     movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
     nfo_content = "<movie>\n"
     
@@ -35,7 +42,7 @@ def generate_movie_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-def generate_tvshow_nfo(entry_data, output_dir="."):
+def generate_tvshow_nfo(entry_data, output_dir):
     tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
     nfo_content = "<tvshow>\n"
     
@@ -49,15 +56,15 @@ def generate_tvshow_nfo(entry_data, output_dir="."):
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
-def generate_episode_nfo(entry_data, output_dir="."):
+def generate_episode_nfo(entry_data, output_dir):
     # Function to generate episode NFO
     pass
 
-def generate_music_artist_nfo(entry_data, output_dir="."):
+def generate_music_artist_nfo(entry_data, output_dir):
     # Function to generate music artist NFO
     pass
 
-def generate_song_nfo(entry_data, output_dir="."):
+def generate_song_nfo(entry_data, output_dir):
     # Function to generate song NFO
     pass
 
@@ -75,12 +82,14 @@ def process_csv(csv_file, search_term, nfo_function, max_matches=None):
     if max_matches and len(entries) > max_matches:
         print(f"Error: Found {len(entries)} matches. Please refine your search.")
         return
+    output_dir = ensure_nfo_directory_exists()  # Ensure 'nfo' directory exists
     for entry in entries:
-        nfo_function(entry)
+        nfo_function(entry, output_dir)
 
 def process_all_csvs(search_term):
     csv_dir = "csv"
-    
+    output_dir = ensure_nfo_directory_exists()
+
     # Process movies
     csv_file = os.path.join(csv_dir, "movies.csv")
     process_csv(csv_file, search_term, generate_movie_nfo)
@@ -122,7 +131,7 @@ if __name__ == "__main__":
             for entry in entries:
                 print(f"- {entry['title']} ({entry['year']})")
         else:
-            generate_tvshow_nfo(entries[0])  # Generate NFO if exactly one match is found
+            generate_tvshow_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
     
     elif args.episode:
         csv_file = os.path.join(csv_dir, "tvshows.csv")
@@ -138,7 +147,7 @@ if __name__ == "__main__":
             for entry in entries:
                 print(f"- {entry['title']} ({entry['year']})")
         else:
-            generate_music_artist_nfo(entries[0])  # Generate NFO if exactly one match is found
+            generate_music_artist_nfo(entries[0], ensure_nfo_directory_exists())  # Generate NFO if exactly one match is found
     
     elif args.song:
         csv_file = os.path.join(csv_dir, "music.csv")
