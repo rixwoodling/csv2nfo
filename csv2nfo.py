@@ -121,7 +121,7 @@ if __name__ == "__main__":
     csv_dir = "csv"
     csv_files = {
         os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
-        os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo,
+        os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo,
         os.path.join(csv_dir, "music.csv"): generate_music_nfo
     }
 
