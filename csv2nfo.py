@@ -148,8 +148,8 @@ def find_entries(csv_file, search_term):
 if __name__ == "__main__":
     # Set up basic argparse
     parser = argparse.ArgumentParser(description="Generate NFO files from CSV.")
-    parser.add_argument('-m', '--movie', action='store_true', help='Search only in movies.csv')
-    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only in tvshows.csv')
+    parser.add_argument('-m', '--movies', action='store_true', help='Search only in movies.csv')
+    parser.add_argument('-t', '--tvshows', action='store_true', help='Search only in tvshows.csv')
     parser.add_argument('search_term', help='The search term for filtering entries')
     args = parser.parse_args()
 
