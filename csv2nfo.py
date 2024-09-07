@@ -5,6 +5,13 @@ import csv
 import sys
 import os
 
+# Function to ensure 'nfo' directory exists
+def ensure_nfo_directory_exists():
+    output_dir = "nfo"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    return output_dir
+
 def generate_movie_nfo(entry_data, output_dir="."):
     movie_tags_to_include = ['title', 'year', 'dateadded', 'actor1', 'actor2', 'actor3']  # Add actors as needed
     nfo_content = "<movie>\n"
@@ -81,6 +88,9 @@ if __name__ == "__main__":
 
     search_term = sys.argv[1]
     
+    # Ensure 'nfo' directory exists
+    output_dir = ensure_nfo_directory_exists()
+    
     # Define the CSV files to search in the 'csv' directory
     csv_dir = "csv"
     csv_files = {
@@ -94,4 +104,4 @@ if __name__ == "__main__":
         entries = find_entries(csv_file, search_term)
         if entries:
             for entry in entries:
-                nfo_function(entry)
+                nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
