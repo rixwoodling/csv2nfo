@@ -99,9 +99,21 @@ if __name__ == "__main__":
         os.path.join(csv_dir, "music.csv"): generate_music_nfo
     }
 
+    # Counter for NFO files created
+    nfo_count = 0
+
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
         entries = find_entries(csv_file, search_term)
         if entries:
             for entry in entries:
                 nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
+                nfo_count += 1
+
+    # Provide feedback on the number of NFO files created
+    if nfo_count > 0:
+        print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
+    else:
+        print("0 NFO files created. No matches found.")
+
+#
