@@ -152,6 +152,7 @@ def find_entries(csv_file, search_term):
 # Function to find entries in by column only
 def find_entries_by_column(csv_file, search_term, column):
     matches = []
+    unique_titles = set()  # To store unique titles and prevent duplicates
 
     if os.path.exists(csv_file):
         with open(csv_file, mode='r', encoding='utf-8') as file:
@@ -159,9 +160,11 @@ def find_entries_by_column(csv_file, search_term, column):
             # Iterate through each row and search only in the specified column
             for row in reader:
                 if column in row:
-                    # Search only within the specified column (e.g., 'title')
-                    if search_term.lower() in row[column].lower():
+                    title = row[column].strip().lower()
+                    # Only add unique titles
+                    if search_term.lower() in title and title not in unique_titles:
                         matches.append(row)
+                        unique_titles.add(title)  # Ensure uniqueness
     return matches
 
 if __name__ == "__main__":
