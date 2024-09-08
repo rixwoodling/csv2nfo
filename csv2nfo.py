@@ -170,7 +170,6 @@ if __name__ == "__main__":
     elif args.episodes:
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
     elif args.tvshow:
-        # Only create TV show NFO if there's exactly one result
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo}
     else:
         # Default behavior when no flags are provided: search all CSV files
@@ -188,12 +187,15 @@ if __name__ == "__main__":
         entries = find_entries(csv_file, args.search_term)
         
         if args.tvshow:
-            # For the TV show flag, ensure only one result, otherwise show error
-            if len(entries) > 1:
-                print(f"Error: Found {len(entries)} matches. Please refine your search.")
+            # Deduplicate TV show entries by checking if the show title (and optionally year) is the same
+            unique_show_titles = {entry['title']: entry for entry in entries}
+
+            if len(unique_show_titles) > 1:
+                print(f"Error: Found {len(unique_show_titles)} unique matches. Please refine your search.")
                 sys.exit(1)
-            elif len(entries) == 1:
-                nfo_function(entries[0], output_dir)
+            elif len(unique_show_titles) == 1:
+                # Use the first unique match to create the TV show NFO
+                nfo_function(next(iter(unique_show_titles.values())), output_dir)
                 nfo_count += 1
         else:
             # For movies, episodes, and the default case, create NFO for each result
