@@ -78,18 +78,23 @@ def generate_tvshow_nfo(entry_data, output_dir="."):
     tvshow_tags_to_include = ['title', 'year']
     nfo_content = "<tvshow>\n"
     
+    # Include the necessary tags in the NFO content
     for tag in tvshow_tags_to_include:
         if tag in entry_data:
             nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
 
     nfo_content += "</tvshow>"
     
-    # Sanitize the filename
-    filename = f"{sanitize_filename(entry_data['title'])}.nfo"
+    # Set the filename to always be 'tvshow.nfo'
+    filename = "tvshow.nfo"
     
+    # Define the output path for the NFO file
     output_path = os.path.join(output_dir, filename)
+    
+    # Write the NFO content to the file
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
+
 
 def generate_episode_nfo(entry_data, output_dir="."):
     show_title = sanitize_filename(entry_data['show_title'])
