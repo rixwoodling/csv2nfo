@@ -187,11 +187,17 @@ if __name__ == "__main__":
         entries = find_entries(csv_file, args.search_term)
 
         if args.tvshow:
-            # Group results by show title (simple case-sensitive comparison)
+            # Normalize the search term (case-insensitive and strip spaces)
+            search_term = args.search_term.strip().lower()
+
+            # Group results by normalized show title (ignoring episode details)
             shows_found = {}
             for entry in entries:
-                show_title = entry['title'].strip()  # Strip leading/trailing spaces if any
-                if show_title.startswith(args.search_term):
+                # Normalize the show title (case-insensitive and strip spaces)
+                show_title = entry['title'].strip().lower()
+
+                # If the search term matches the start of the show title
+                if show_title == search_term:
                     if show_title not in shows_found:
                         shows_found[show_title] = entry
 
