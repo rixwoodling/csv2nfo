@@ -185,17 +185,25 @@ if __name__ == "__main__":
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
         entries = find_entries(csv_file, args.search_term)
-        
-        if args.tvshow:
-            # Deduplicate TV show entries by checking if the show title (and optionally year) is the same
-            unique_show_titles = {entry['title']: entry for entry in entries}
 
-            if len(unique_show_titles) > 1:
-                print(f"Error: Found {len(unique_show_titles)} unique matches. Please refine your search.")
+        if args.tvshow:
+            # Group results by show title (simple case-sensitive comparison)
+            shows_found = {}
+            for entry in entries:
+                show_title = entry['title'].strip()  # Strip leading/trailing spaces if any
+                if show_title.startswith(args.search_term):
+                    if show_title not in shows_found:
+                        shows_found[show_title] = entry
+
+            # If more than one distinct show is found, ask for clarification
+            if len(shows_found) > 1:
+                print(f"Error: Found {len(shows_found)} shows. Please refine your search term. Possible options:")
+                for show in shows_found.keys():
+                    print(f"- {show}")
                 sys.exit(1)
-            elif len(unique_show_titles) == 1:
+            elif len(shows_found) == 1:
                 # Use the first unique match to create the TV show NFO
-                nfo_function(next(iter(unique_show_titles.values())), output_dir)
+                nfo_function(next(iter(shows_found.values())), output_dir)
                 nfo_count += 1
         else:
             # For movies, episodes, and the default case, create NFO for each result
