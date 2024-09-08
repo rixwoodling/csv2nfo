@@ -157,7 +157,6 @@ def find_entries(csv_file, search_term):
 # Function to find entries in by column only
 def find_entries_by_column(csv_file, search_term, column):
     matches = []
-    unique_titles = set()  # To store unique titles and prevent duplicates
 
     if os.path.exists(csv_file):
         with open(csv_file, mode='r', encoding='utf-8') as file:
@@ -165,11 +164,9 @@ def find_entries_by_column(csv_file, search_term, column):
             # Iterate through each row and search only in the specified column
             for row in reader:
                 if column in row:
-                    title = row[column].strip().lower()
-                    # Only add unique titles
-                    if search_term.lower() in title and title not in unique_titles:
+                    # Check for an exact match (case-insensitive)
+                    if row[column].strip().lower() == search_term.strip().lower():
                         matches.append(row)
-                        unique_titles.add(title)  # Ensure uniqueness
     return matches
 
 if __name__ == "__main__":
@@ -177,7 +174,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate NFO files from CSV.")
     parser.add_argument('-m', '--movies', action='store_true', help='Search only in movies.csv')
     parser.add_argument('-e', '--episodes', action='store_true', help='Search only in tvshows.csv (episodes)')
-    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only in tvshows.csv (tvshow)')
+    parser.add_argument('-s', '--songs', action='store_true', help='Search only in music.csv')
+    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only by TV show name in tvshows.csv')
     parser.add_argument('search_term', help='The search term for filtering entries')
     args = parser.parse_args()
 
@@ -188,14 +186,9 @@ if __name__ == "__main__":
     csv_dir = "csv"
 
     # Apply filtering logic based on flags
-    if args.movies:
-        csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
-    elif args.episodes:
-        csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
-    elif args.tvshow:
+    if args.tvshow:
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo}
     else:
-        # Default behavior when no flags are provided: search all CSV files
         csv_files = {
             os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
             os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo,
@@ -210,19 +203,27 @@ if __name__ == "__main__":
         if args.tvshow and nfo_function == generate_tvshow_nfo:
             # Use find_entries_by_column to search only the 'title' column for TV shows
             entries = find_entries_by_column(csv_file, args.search_term, column='show_title')
+
+            # Raise an error if more than one match is found
+            if len(entries) > 1:
+                print(f"{len(entries)} matches were found. Please use exact name.")
+                sys.exit(1)  # Exit with an error code
+            
+            # Proceed if there is exactly one match
+            elif len(entries) == 1:
+                generate_tvshow_nfo(entries[0], output_dir)
+                nfo_count += 1
         else:
             # Use the simpler find_entries to search across all columns
             entries = find_entries(csv_file, args.search_term)
 
-        if entries:
-            for entry in entries:
-                nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
-                nfo_count += 1
+            if entries:
+                for entry in entries:
+                    nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
+                    nfo_count += 1
 
     # Provide feedback on the number of NFO files created
     if nfo_count > 0:
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
-
-#
