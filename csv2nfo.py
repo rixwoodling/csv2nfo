@@ -75,7 +75,7 @@ def generate_movie_nfo(entry_data, output_dir="."):
     # print(f"NFO file created: {output_path}")
 
 def generate_tvshow_nfo(entry_data, output_dir="."):
-    tvshow_tags_to_include = ['title', 'year']
+    tvshow_tags_to_include = ['show_title', 'year']
     nfo_content = "<tvshow>\n"
     
     # Include the necessary tags in the NFO content
