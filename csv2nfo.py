@@ -75,7 +75,7 @@ def generate_movie_nfo(entry_data, output_dir="."):
     # print(f"NFO file created: {output_path}")
 
 def generate_tvshow_nfo(entry_data, output_dir="."):
-    tvshow_tags_to_include = ['title', 'year', 'dateadded', 'season', 'episode']
+    tvshow_tags_to_include = ['title', 'year']
     nfo_content = "<tvshow>\n"
     
     for tag in tvshow_tags_to_include:
@@ -147,6 +147,24 @@ def find_entries(csv_file, search_term):
                     if search_term.lower() in field.lower():
                         matches.append(row)
                         break  # Break to avoid adding the same row multiple times if the term appears in multiple fields
+    return matches
+
+# Function to find entries in by column only
+def find_entries_by_column(csv_file, search_term, column):
+    matches = []
+    unique_titles = set()  # To store unique titles and prevent duplicates
+
+    if os.path.exists(csv_file):
+        with open(csv_file, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            # Iterate through each row and search only in the specified column
+            for row in reader:
+                if column in row:
+                    title = row[column].strip().lower()
+                    # Only add unique titles
+                    if search_term.lower() in title and title not in unique_titles:
+                        matches.append(row)
+                        unique_titles.add(title)  # Ensure uniqueness
     return matches
 
 if __name__ == "__main__":
