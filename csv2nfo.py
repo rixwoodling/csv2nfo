@@ -201,7 +201,7 @@ if __name__ == "__main__":
     for csv_file, nfo_function in csv_files.items():
         if args.tvshow and nfo_function == generate_tvshow_nfo:
             # Use find_entries_by_column to search only the 'title' column for TV shows
-            entries = find_entries_by_column(csv_file, args.search_term, column='title')
+            entries = find_entries_by_column(csv_file, args.search_term, column='show_title')
         else:
             # Use the simpler find_entries to search across all columns
             entries = find_entries(csv_file, args.search_term)
