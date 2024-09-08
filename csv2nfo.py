@@ -153,7 +153,8 @@ if __name__ == "__main__":
     # Set up basic argparse
     parser = argparse.ArgumentParser(description="Generate NFO files from CSV.")
     parser.add_argument('-m', '--movies', action='store_true', help='Search only in movies.csv')
-    parser.add_argument('-e', '--episodes', action='store_true', help='Search only in tvshows.csv')
+    parser.add_argument('-e', '--episodes', action='store_true', help='Search only in tvshows.csv (episodes)')
+    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only in tvshows.csv (tvshow)')
     parser.add_argument('search_term', help='The search term for filtering entries')
     args = parser.parse_args()
 
@@ -168,6 +169,8 @@ if __name__ == "__main__":
         csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
     elif args.episodes:
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
+    elif args.tvshow:
+        csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo}
     else:
         # Default behavior when no flags are provided: search all CSV files
         csv_files = {
@@ -192,5 +195,3 @@ if __name__ == "__main__":
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
-
-#
