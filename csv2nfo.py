@@ -153,7 +153,8 @@ if __name__ == "__main__":
     # Set up basic argparse
     parser = argparse.ArgumentParser(description="Generate NFO files from CSV.")
     parser.add_argument('-m', '--movies', action='store_true', help='Search only in movies.csv')
-    parser.add_argument('-e', '--episodes', action='store_true', help='Search only in tvshows.csv')
+    parser.add_argument('-e', '--episodes', action='store_true', help='Search only in tvshows.csv for episodes')
+    parser.add_argument('-t', '--tvshow', action='store_true', help='Search only in tvshows.csv for a single TV show')
     parser.add_argument('search_term', help='The search term for filtering entries')
     args = parser.parse_args()
 
@@ -168,6 +169,9 @@ if __name__ == "__main__":
         csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
     elif args.episodes:
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
+    elif args.tvshow:
+        # Only create TV show NFO if there's exactly one result
+        csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo}
     else:
         # Default behavior when no flags are provided: search all CSV files
         csv_files = {
@@ -182,10 +186,21 @@ if __name__ == "__main__":
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
         entries = find_entries(csv_file, args.search_term)
-        if entries:
-            for entry in entries:
-                nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
+        
+        if args.tvshow:
+            # For the TV show flag, ensure only one result, otherwise show error
+            if len(entries) > 1:
+                print(f"Error: Found {len(entries)} matches. Please refine your search.")
+                sys.exit(1)
+            elif len(entries) == 1:
+                nfo_function(entries[0], output_dir)
                 nfo_count += 1
+        else:
+            # For movies, episodes, and the default case, create NFO for each result
+            if entries:
+                for entry in entries:
+                    nfo_function(entry, output_dir)
+                    nfo_count += 1
 
     # Provide feedback on the number of NFO files created
     if nfo_count > 0:
