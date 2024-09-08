@@ -15,17 +15,20 @@ def ensure_nfo_directory_exists():
 
 # Function to sanitize filenames by replacing spaces with periods and keeping only alphanumeric characters and periods
 def sanitize_filename(title):
-    # Replace spaces with periods and handle ellipses
-    title = title.replace(" ", ".").replace("...", ".")
-    
-    # Keep only alphanumeric characters and periods, replacing other characters with periods
-    sanitized_title = "".join(char if char.isalnum() or char == "." else "." for char in title)
-    
-    # While loop to replace multiple periods with a single period
+    # Replace spaces with periods
+    title = title.replace(" ", ".")
+
+    # Remove specific punctuation (like apostrophes) instead of replacing them with periods
+    title = title.replace("'", "")  # Remove apostrophes
+
+    # Keep only alphanumeric characters, periods, and hyphens
+    sanitized_title = "".join(char for char in title if char.isalnum() or char in ".-")
+
+    # Replace multiple periods with a single period using a while loop
     while ".." in sanitized_title:
         sanitized_title = sanitized_title.replace("..", ".")
 
-    # Strip leading/trailing periods to avoid issues like '.filename.' or 'filename..'
+    # Remove leading and trailing periods
     return sanitized_title.strip(".")
 
 def generate_movie_nfo(entry_data, output_dir="."):
