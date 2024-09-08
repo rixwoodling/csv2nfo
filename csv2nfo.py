@@ -190,33 +190,22 @@ if __name__ == "__main__":
             # Normalize the search term (case-insensitive and strip spaces)
             search_term = args.search_term.strip().lower()
 
-            # Group results by normalized show title (ignoring episode details)
-            shows_found = {}
+            # Loop through all entries and create NFO for each matching TV show
             for entry in entries:
                 # Normalize the show title (case-insensitive and strip spaces)
                 show_title = entry['title'].strip().lower()
 
-                # If the search term matches the start of the show title
+                # If the search term matches the show title
                 if show_title == search_term:
-                    if show_title not in shows_found:
-                        shows_found[show_title] = entry
-
-            # If more than one distinct show is found, ask for clarification
-            if len(shows_found) > 1:
-                print(f"Error: Found {len(shows_found)} shows. Please refine your search term. Possible options:")
-                for show in shows_found.keys():
-                    print(f"- {show}")
-                sys.exit(1)
-            elif len(shows_found) == 1:
-                # Use the first unique match to create the TV show NFO
-                nfo_function(next(iter(shows_found.values())), output_dir)
-                nfo_count += 1
-        else:
-            # For movies, episodes, and the default case, create NFO for each result
-            if entries:
-                for entry in entries:
+                    # Create the TV show NFO (this will overwrite if multiple matches)
                     nfo_function(entry, output_dir)
                     nfo_count += 1
+                else:
+                    # For movies, episodes, and the default case, create NFO for each result
+                    if entries:
+                        for entry in entries:
+                            nfo_function(entry, output_dir)
+                            nfo_count += 1
 
     # Provide feedback on the number of NFO files created
     if nfo_count > 0:
