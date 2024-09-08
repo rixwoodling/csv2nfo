@@ -202,7 +202,13 @@ if __name__ == "__main__":
 
     # Iterate through each CSV file and apply the corresponding function
     for csv_file, nfo_function in csv_files.items():
-        entries = find_entries(csv_file, args.search_term)
+        if args.tvshow and nfo_function == generate_tvshow_nfo:
+            # Use find_entries_by_column to search only the 'title' column for TV shows
+            entries = find_entries_by_column(csv_file, args.search_term, column='title')
+        else:
+            # Use the simpler find_entries to search across all columns
+            entries = find_entries(csv_file, args.search_term)
+
         if entries:
             for entry in entries:
                 nfo_function(entry, output_dir)  # Pass the 'nfo' directory as output_dir
@@ -213,3 +219,5 @@ if __name__ == "__main__":
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
+
+#
