@@ -51,41 +51,41 @@ def sanitize_filename(title):
 def generate_movie_nfo(entry_data, output_dir=".", use_directory_flag=False):
     movie_title = sanitize_filename(entry_data['title'])
     year = entry_data['year']
-    
+
     # Get the output directory based on the -d flag
     output_dir = get_output_directory(output_dir, entry_data['title'], year, use_directory_flag)
 
     # Create the formatted filename: MovieTitle.Year.nfo
     filename = f"{movie_title}.{year}.nfo"
     output_path = os.path.join(output_dir, filename)
-    
+
     nfo_content = "<movie>\n"
     movie_tags_to_include = ['title', 'year']
-    
+
     for tag in movie_tags_to_include:
         if tag in entry_data:
             nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
-    
+
     nfo_content += "</movie>"
-    
+
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
 def generate_tvshow_nfo(entry_data, output_dir=".", use_directory_flag=False):
     tvshow_tags_to_include = ['show_title', 'year']
-    
+
     # Get the output directory based on the -d flag
     output_dir = get_output_directory(output_dir, entry_data['show_title'], entry_data['year'], use_directory_flag)
-    
+
     filename = "tvshow.nfo"
     output_path = os.path.join(output_dir, filename)
-    
+
     nfo_content = "<tvshow>\n"
     for tag in tvshow_tags_to_include:
         if tag in entry_data:
             nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
     nfo_content += "</tvshow>"
-    
+
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
@@ -102,37 +102,37 @@ def generate_episode_nfo(entry_data, output_dir=".", use_directory_flag=False):
     # Create the formatted filename: SXXEXX.EpisodeTitle.nfo
     filename = f"S{season.zfill(2)}E{episode.zfill(2)}.{episode_title}.nfo"
     output_path = os.path.join(output_dir, filename)
-    
+
     nfo_content = "<episodedetails>\n"
     nfo_content += f"<title>{entry_data['title']}</title>\n"
     nfo_content += f"<season>{entry_data['season']}</season>\n"
     nfo_content += f"<episode>{entry_data['episode']}</episode>\n"
     nfo_content += f"<aired>{entry_data['release_date']}</aired>\n"
     nfo_content += "</episodedetails>"
-    
+
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
 def generate_music_nfo(entry_data, output_dir=".", use_directory_flag=False):
     music_title = sanitize_filename(entry_data['title'])
     year = entry_data['year']
-    
+
     # Get the output directory based on the -d flag
     output_dir = get_output_directory(output_dir, entry_data['title'], year, use_directory_flag)
 
     # Create the formatted filename: MusicTitle.Year.nfo
     filename = f"{music_title}.{year}.nfo"
     output_path = os.path.join(output_dir, filename)
-    
+
     nfo_content = "<music>\n"
     music_tags_to_include = ['title', 'year', 'album', 'artist']
-    
+
     for tag in music_tags_to_include:
         if tag in entry_data:
             nfo_content += f"<{tag}>{entry_data[tag]}</{tag}>\n"
-    
+
     nfo_content += "</music>"
-    
+
     with open(output_path, 'w', encoding='utf-8') as nfo_file:
         nfo_file.write(nfo_content.strip())
 
@@ -152,27 +152,34 @@ def find_entries(csv_file, search_term):
 def find_entries_by_column(csv_file, search_term, column):
     exact_matches = []
     partial_matches = []
-    
+    unique_entries = set()  # To keep track of unique show_title and year combinations
+
     if os.path.exists(csv_file):
         with open(csv_file, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
-            # Iterate through each row and search in the specified column
             for row in reader:
                 title = row[column].strip().lower()
                 search_term_lower = search_term.strip().lower()
+                year = row['year'].strip()
+
+                # Create a unique identifier for title and year
+                unique_identifier = f"{title} ({year})"
 
                 # Check for an exact match (case-insensitive)
                 if title == search_term_lower:
-                    exact_matches.append(row)
+                    if unique_identifier not in unique_entries:
+                        exact_matches.append(row)
+                        unique_entries.add(unique_identifier)
                 # Check for a partial match
                 elif search_term_lower in title:
-                    partial_matches.append(row)
-    
+                    if unique_identifier not in unique_entries:
+                        partial_matches.append(row)
+                        unique_entries.add(unique_identifier)
+
     # Return exact matches if available, otherwise return partial matches
     if exact_matches:
         return exact_matches
     return partial_matches
-
 
 if __name__ == "__main__":
     # Set up basic argparse
@@ -209,22 +216,36 @@ if __name__ == "__main__":
         if args.tvshow and nfo_function == generate_tvshow_nfo:
             # Use find_entries_by_column to search only the 'title' column for TV shows
             entries = find_entries_by_column(csv_file, args.search_term, column='show_title')
-            
             if entries:
-                # Handle exact matches
-                if len(entries) == 1:
-                    generate_tvshow_nfo(entries[0], output_dir, args.directory)
-                    nfo_count += 1
-                # Handle multiple partial matches
-                elif len(entries) > 1:
-                    print(f"Multiple matches found for '{args.search_term}':")
+                if args.directory:
+                    # If -d is used, generate NFO for all matches without asking for clarification
                     for entry in entries:
-                        print(f"- {entry['show_title']} ({entry['year']})")
-                    print("Please clarify your search.")
-                    sys.exit(1)  # Exit with an error code
+                        generate_tvshow_nfo(entry, output_dir, args.directory)
+                        nfo_count += 1
+                else:
+                    # If no -d flag, prompt for clarification if multiple matches found
+                    if len(entries) > 1:
+                        print(f"Multiple matches found for '{args.search_term}':")
+                        for entry in entries:
+                            print(f"- {entry['show_title']} ({entry['year']})")
+                        # Prompt user for the year
+                        specified_year = input("Please specify the year: ").strip()
+
+                        # Search for the entry with the specified year
+                        selected_entry = next((entry for entry in entries if entry['year'] == specified_year), None)
+
+                        if selected_entry:
+                            generate_tvshow_nfo(selected_entry, output_dir, args.directory)
+                            nfo_count += 1
+                        else:
+                            print(f"No match found for the year '{specified_year}'. Exiting.")
+                            sys.exit(1)
+                    else:
+                        generate_tvshow_nfo(entries[0], output_dir, args.directory)
+                        nfo_count += 1
             else:
                 print(f"No matches found for '{args.search_term}'.")
-                sys.exit(1)  # Exit with an error code
+                sys.exit(1)
         else:
             # Use the find_entries function to search across all columns
             entries = find_entries(csv_file, args.search_term)
@@ -238,3 +259,5 @@ if __name__ == "__main__":
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
+
+#
