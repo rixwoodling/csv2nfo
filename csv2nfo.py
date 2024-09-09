@@ -200,12 +200,23 @@ if __name__ == "__main__":
 
     # Apply filtering logic based on flags
     if args.tvshow:
+        # Only search in tvshows.csv for TV show NFOs
         csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_tvshow_nfo}
+    elif args.movies:
+        # Only search in movies.csv
+        csv_files = {os.path.join(csv_dir, "movies.csv"): generate_movie_nfo}
+    elif args.episodes:
+        # Only search in tvshows.csv for episode NFOs
+        csv_files = {os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo}
+    elif args.songs:
+        # Only search in music.csv for song NFOs (to be added later)
+        csv_files = {os.path.join(csv_dir, "music.csv"): generate_music_nfo}
     else:
+        # Default behavior: combine -m, -e (and -s eventually)
         csv_files = {
             os.path.join(csv_dir, "movies.csv"): generate_movie_nfo,
             os.path.join(csv_dir, "tvshows.csv"): generate_episode_nfo,
-            os.path.join(csv_dir, "music.csv"): generate_music_nfo
+            # os.path.join(csv_dir, "music.csv"): generate_music_nfo  # For future use
         }
 
     # Counter for NFO files created
