@@ -150,18 +150,29 @@ def find_entries(csv_file, search_term):
 
 # Function to find entries in by column only
 def find_entries_by_column(csv_file, search_term, column):
-    matches = []
-    unique_titles = set()
-
+    exact_matches = []
+    partial_matches = []
+    
     if os.path.exists(csv_file):
         with open(csv_file, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
+            # Iterate through each row and search in the specified column
             for row in reader:
                 title = row[column].strip().lower()
-                if search_term.lower() in title and title not in unique_titles:
-                    matches.append(row)
-                    unique_titles.add(title)  # Avoid duplicates
-    return matches
+                search_term_lower = search_term.strip().lower()
+
+                # Check for an exact match (case-insensitive)
+                if title == search_term_lower:
+                    exact_matches.append(row)
+                # Check for a partial match
+                elif search_term_lower in title:
+                    partial_matches.append(row)
+    
+    # Return exact matches if available, otherwise return partial matches
+    if exact_matches:
+        return exact_matches
+    return partial_matches
+
 
 if __name__ == "__main__":
     # Set up basic argparse
@@ -198,9 +209,22 @@ if __name__ == "__main__":
         if args.tvshow and nfo_function == generate_tvshow_nfo:
             # Use find_entries_by_column to search only the 'title' column for TV shows
             entries = find_entries_by_column(csv_file, args.search_term, column='show_title')
+            
             if entries:
-                generate_tvshow_nfo(entries[0], output_dir, args.directory)
-                nfo_count += 1
+                # Handle exact matches
+                if len(entries) == 1:
+                    generate_tvshow_nfo(entries[0], output_dir, args.directory)
+                    nfo_count += 1
+                # Handle multiple partial matches
+                elif len(entries) > 1:
+                    print(f"Multiple matches found for '{args.search_term}':")
+                    for entry in entries:
+                        print(f"- {entry['show_title']} ({entry['year']})")
+                    print("Please clarify your search.")
+                    sys.exit(1)  # Exit with an error code
+            else:
+                print(f"No matches found for '{args.search_term}'.")
+                sys.exit(1)  # Exit with an error code
         else:
             # Use the find_entries function to search across all columns
             entries = find_entries(csv_file, args.search_term)
@@ -214,5 +238,3 @@ if __name__ == "__main__":
         print(f"{nfo_count} NFO file{'s' if nfo_count > 1 else ''} created.")
     else:
         print("0 NFO files created. No matches found.")
-
-#
